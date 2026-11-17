@@ -2,8 +2,21 @@ package models
 
 import "api-tests-template/internal/managers/advertisement/models"
 
+const FavoriteLimit = 50
+
 type AddRequest struct {
 	AdvertisementID string `json:"advertisement_id"`
+}
+
+type BulkAddRequest struct {
+	AdvertisementIDs []string `json:"advertisement_ids"`
+}
+
+type BulkAddResult struct {
+	Added        []string `json:"added"`
+	NotFound     []string `json:"not_found"`
+	Skipped      []string `json:"skipped"`
+	LimitReached bool     `json:"limit_reached"`
 }
 
 type Item struct {

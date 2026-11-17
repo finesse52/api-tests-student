@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	DefaultPrice    = 1250.50
-	DefaultQuantity = 2
+	defaultPrice            = 1250.50
+	defaultQuantity         = 2
+	testAdvertisementPrefix = "QA advertisement "
 )
 
 type OwnedAdvertisement struct {
@@ -40,10 +41,10 @@ func NewCreateRequest(t *testing.T, photoCount int) models.CreateRequest {
 	require.GreaterOrEqual(t, photoCount, 0)
 	require.LessOrEqual(t, photoCount, 3)
 	request := models.CreateRequest{
-		Title:       "QA advertisement " + utils.RandomString(16),
+		Title:       testAdvertisementPrefix + utils.RandomString(16),
 		Description: "Created by the automated API test suite",
-		Price:       DefaultPrice,
-		Quantity:    DefaultQuantity,
+		Price:       defaultPrice,
+		Quantity:    defaultQuantity,
 	}
 	for i := range photoCount {
 		request.PhotoFiles = append(request.PhotoFiles, createPhotoFile(t, i))
@@ -79,7 +80,11 @@ func createPhotoFile(t *testing.T, index int) string {
 	filePath := filepath.Join(t.TempDir(), fmt.Sprintf("photo-%d.jpg", index))
 	file, err := os.Create(filePath)
 	require.NoError(t, err, "не удалось создать временную фотографию")
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Errorf("не удалось закрыть временную фотографию: %v", err)
+		}
+	}()
 
 	photo := image.NewRGBA(image.Rect(0, 0, 256, 256))
 	shade := uint8(50 + index*50) //nolint:gosec // index is limited to three photos.

@@ -11,17 +11,22 @@ import (
 )
 
 // HttpCreate sends a multipart advertisement request, including each photo under the same field name.
-func HttpCreate(t *testing.T, token string, request models.CreateRequest) *http.Response {
+func HttpCreate(t *testing.T, token string, request models.CreateRequest, retryTransport bool) *http.Response {
 	t.Helper()
-	call := apiRunner.GetRunner().Auth(token).CreateWithTimeout().Post(path.AdvertisementPath).
+	runner := apiRunner.GetRunner().Auth(token)
+	call := runner.CreateWithTimeout()
+	if retryTransport {
+		call = runner.CreateWithTransientTransportRetry()
+	}
+	createRequest := call.Post(path.AdvertisementPath).
 		MultipartFormData("title", request.Title).
 		MultipartFormData("description", request.Description).
 		MultipartFormData("price", strconv.FormatFloat(request.Price, 'f', 2, 64)).
 		MultipartFormData("quantity", strconv.Itoa(request.Quantity))
 	for _, photo := range request.PhotoFiles {
-		call = call.MultipartFile("photos", photo)
+		createRequest = createRequest.MultipartFile("photos", photo)
 	}
-	return call.Expect(t).End().Response
+	return createRequest.Expect(t).End().Response
 }
 
 // HttpGet retrieves an advertisement by its query-string ID.

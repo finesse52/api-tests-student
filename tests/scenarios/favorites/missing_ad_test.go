@@ -30,7 +30,9 @@ func TestFavoriteOperationsWithMissingAdvertisement(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Logf("Подготовка: используем отсутствующий ad_id=%s", missingAdvertisementID)
 			t.Logf("Шаг: %s отсутствующего объявления в избранном", tc.name)
-			result := tc.call(t)
+			result := fixtures.RetryServiceUnavailable(t, tc.name+" отсутствующего ad_id", func() response.Result {
+				return tc.call(t)
+			})
 			apiError := result.RequireError(t, http.StatusNotFound, "")
 			require.Equal(t, tc.message, apiError.Message, "неверное сообщение для отсутствующего ad_id")
 			t.Logf("Результат: HTTP %d, message=%q", result.StatusCode, apiError.Message)

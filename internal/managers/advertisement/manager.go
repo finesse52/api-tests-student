@@ -11,7 +11,13 @@ import (
 // Create sends a new advertisement and returns its status and body for positive or negative checks.
 func Create(t *testing.T, token string, request models.CreateRequest) response.Result {
 	t.Helper()
-	return response.Read(t, advertisement.HttpCreate(t, token, request))
+	return response.Read(t, advertisement.HttpCreate(t, token, request, false))
+}
+
+// CreateExpectedError repeats transient transport failures for requests that must be rejected by the API.
+func CreateExpectedError(t *testing.T, token string, request models.CreateRequest) response.Result {
+	t.Helper()
+	return response.Read(t, advertisement.HttpCreate(t, token, request, true))
 }
 
 // Get reads an advertisement by ID.

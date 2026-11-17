@@ -19,6 +19,12 @@ func Add(t *testing.T, token, id string) response.Result {
 	return response.Read(t, favorites.HttpAdd(t, token, id))
 }
 
+// BulkAdd merges multiple advertisement IDs into the authorized user's favorites.
+func BulkAdd(t *testing.T, token string, ids []string) response.Result {
+	t.Helper()
+	return response.Read(t, favorites.HttpBulkAdd(t, token, ids))
+}
+
 // Delete removes an advertisement ID from the authorized user's favorites.
 func Delete(t *testing.T, token, id string) response.Result {
 	t.Helper()

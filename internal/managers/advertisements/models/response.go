@@ -7,5 +7,7 @@ type AdvertisementsList struct {
 }
 
 type Advertisement struct {
-	Title string `json:"title"`
+	ID     string `json:"id"`
+	Title  string `json:"title"`
+	UserID string `json:"user_id"`
 }

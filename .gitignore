@@ -6,6 +6,7 @@
 # IDE system files
 .idea
 .vscode
+.DS_Store
 
 # vendoring cache directory
 .cache

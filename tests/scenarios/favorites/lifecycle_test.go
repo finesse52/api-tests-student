@@ -1,7 +1,6 @@
 package favorites
 
 import (
-	"net/http"
 	"testing"
 
 	"api-tests-template/internal/managers/advertisement"
@@ -18,7 +17,7 @@ func TestFavoriteLifecycleAndAdvertisementDeletion(t *testing.T) {
 	fixtures.RequireFavorite(t, viewer.Token, request.Title, created.ID, false)
 
 	t.Log("Шаг: добавляем чужое объявление в избранное")
-	fixtures.AddFavorite(t, viewer.Token, created.ID)
+	fixtures.AddFavorite(t, viewer.Token, request.Title, created.ID)
 	fixtures.RequireFavorite(t, viewer.Token, request.Title, created.ID, true)
 	t.Log("Результат: объявление появилось в избранном")
 
@@ -30,7 +29,7 @@ func TestFavoriteLifecycleAndAdvertisementDeletion(t *testing.T) {
 	t.Log("Результат: объявление исчезло из избранного")
 
 	t.Log("Шаг: добавляем объявление снова и удаляем его владельцем")
-	favoriteManager.Add(t, viewer.Token, created.ID).RequireStatus(t, http.StatusCreated)
+	fixtures.AddFavorite(t, viewer.Token, request.Title, created.ID)
 	fixtures.RequireFavorite(t, viewer.Token, request.Title, created.ID, true)
 	fixtures.DeleteUntilCompleted(t, "объявления "+created.ID, func() response.Result {
 		return advertisement.Delete(t, owner.Token, created.ID)

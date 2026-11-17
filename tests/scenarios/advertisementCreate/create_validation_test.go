@@ -9,6 +9,7 @@ import (
 
 	"api-tests-template/internal/managers/advertisement"
 	"api-tests-template/internal/managers/advertisement/models"
+	"api-tests-template/internal/managers/response"
 	"api-tests-template/tests/fixtures"
 )
 
@@ -30,7 +31,9 @@ func TestCreateAdvertisementRejectsInvalidFields(t *testing.T) {
 			request := fixtures.NewCreateRequest(t, 1)
 			tc.change(&request)
 			t.Logf("Подготовка: сформирован запрос с ошибкой: %s", tc.name)
-			result := advertisement.Create(t, owner.Token, request)
+			result := fixtures.RetryServiceUnavailable(t, "POST /advertisement с некорректными данными", func() response.Result {
+				return advertisement.CreateExpectedError(t, owner.Token, request)
+			})
 			t.Log("Шаг: проверяем отказ сервера и тело ошибки")
 			apiError := result.RequireError(t, http.StatusBadRequest, "invalid_request")
 			require.Equal(t, tc.message, apiError.Message, "неверное сообщение об ошибке валидации")

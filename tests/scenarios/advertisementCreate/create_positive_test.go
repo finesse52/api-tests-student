@@ -10,6 +10,7 @@ import (
 	"api-tests-template/internal/managers/advertisement"
 	"api-tests-template/internal/managers/advertisement/models"
 	"api-tests-template/internal/managers/advertisements"
+	"api-tests-template/internal/managers/response"
 	"api-tests-template/tests/fixtures"
 )
 
@@ -28,7 +29,9 @@ func TestCreateAdvertisementWithAllFields(t *testing.T) {
 	t.Log("Результат: сервер сохранил все параметры и три фотографии")
 
 	t.Log("Шаг: читаем объявление через GET /advertisement?id=...")
-	getResult := advertisement.Get(t, created.ID)
+	getResult := fixtures.RetryServiceUnavailable(t, "GET /advertisement", func() response.Result {
+		return advertisement.Get(t, created.ID)
+	})
 	getResult.RequireStatus(t, http.StatusOK)
 	var fetched models.Advertisement
 	getResult.Decode(t, &fetched)
@@ -60,7 +63,9 @@ func TestCreateAdvertisementWithAllFields(t *testing.T) {
 	t.Log("Результат: объявление найдено в каталоге")
 
 	t.Log("Шаг: читаем фотографии через GET /advertisements/{id}/photos")
-	photosResult := advertisement.GetPhotos(t, owner.Token, created.ID)
+	photosResult := fixtures.RetryServiceUnavailable(t, "GET /advertisements/{id}/photos", func() response.Result {
+		return advertisement.GetPhotos(t, owner.Token, created.ID)
+	})
 	photosResult.RequireStatus(t, http.StatusOK)
 	var storedPhotos []models.Photo
 	photosResult.Decode(t, &storedPhotos)

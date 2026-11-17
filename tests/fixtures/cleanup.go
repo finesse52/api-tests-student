@@ -11,7 +11,7 @@ import (
 
 const (
 	retryTimeout  = 10 * time.Second
-	retryInterval = 250 * time.Millisecond
+	retryInterval = 500 * time.Millisecond
 )
 
 // RequireAdvertisementDeleted polls until a deleted advertisement is no longer readable.

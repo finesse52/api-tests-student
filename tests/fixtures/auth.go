@@ -16,6 +16,10 @@ const (
 	PrimaryPasswordEnv = "TEST_PASSWORD"
 	SecondLoginEnv     = "TEST_SECOND_LOGIN"
 	SecondPasswordEnv  = "TEST_SECOND_PASSWORD"
+	InvalidToken       = "incorrect_token"
+	MissingAuthMessage = "Authorization header required"
+	InvalidAuthMessage = "Invalid or expired token"
+	UnauthorizedError  = "unauthorized"
 )
 
 // Login loads the local environment and authorizes the selected test account.

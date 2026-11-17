@@ -1,55 +1,47 @@
-# API-тесты для проекта https://testboard.avito.com/
+# API-тесты TestBoard
 
-## Полезные ссылки
+Интеграционные тесты для [TestBoard](https://testboard.avito.com/). Контракт API опубликован в [Swagger](https://testboard.avito.com/swagger/index.html). Проект использует Go 1.25.1+, `apitest` для HTTP-запросов и `testify` для проверок.
 
-1. [Swagger-спецификация](https://testboard.avito.com/swagger/index.html)
-2. [Техническое задание](https://docs.google.com/document/d/1IZ9SxEcePoQT6lyEmukycp1qNok4HZtok73UQnPwKSA/edit?usp=sharing)
-3. [Библиотека для написания API-тестов](https://github.com/steinfletcher/apitest)
-4. [Мощная библиотека анализа JSON для Go](https://github.com/tidwall/gjson)
+## Подготовка
 
-## Запуск тестов
+1. Установите Go 1.25.1 или новее и [golangci-lint v2](https://golangci-lint.run/docs/welcome/install/local/).
+2. Склонируйте репозиторий и в его корне выполните `go mod download`.
+3. Зарегистрируйте **двух разных пользователей** TestBoard. Первый запускает тесты, второй создаёт объявления для проверки чужого избранного. У обоих должна быть возможность авторизоваться и создавать объявления.
+4. Создайте в корне `.env.override` (файл игнорируется Git):
 
-1. Установите любое IDE для разработки: [Jetbrains GoLand](https://www.jetbrains.com/ru-ru/go/) (Платное или по студенческой лицензии), [VS Code](https://code.visualstudio.com/) (бесплатное).
-2. Установите [Git](https://git-scm.com/install/) на компьютер
-3. [Установите](https://go.dev/doc/install) Go версии 1.25.1
-4. [Настройте](https://docs.github.com/ru/authentication/connecting-to-github-with-ssh) доступ к своему Github-аккаунту
-   по SSH-ключу.
-5. Склонируйте себе репозиторий: `git clone <путь к вашему репозиторию>`
-6. Подтяните необходимые зависимости через команду в корне проекта:
+   ```dotenv
+   TEST_LOGIN=first@example.com
+   TEST_PASSWORD=first_password
+   TEST_SECOND_LOGIN=second@example.com
+   TEST_SECOND_PASSWORD=second_password
+   ```
 
-```bash
-   go mod tidy
-```
+Адрес API задан в `.env`: `https://testboard.avito.com/api/v1`. Если нужен другой стенд, укажите `API_URL` в `.env.override`. Для вывода HTTP-запросов и ответов добавьте `DEBUG=true`; учитывайте, что подробный лог может содержать токены и учётные данные.
 
-7. В файле `.env.override` (создайте его в корне, если нет) выставьте правильные значения для переменных окружения:
-
-```
-TEST_LOGIN=your_login
-TEST_PASSWORD=your_password
-```
-
-8. Для запуска всех тестов достаточно выполнить команду в корне проекта:
+## Запуск
 
 ```bash
-  go test -v ./...
+go test -v -p 1 ./...
+go test -p 1 -count=3 ./...
+golangci-lint run
 ```
 
-9. Отдельный пакет с тестами можно запустить командой:
+`-p 1` запускает пакеты последовательно: общий стенд TestBoard периодически возвращает `503` при одновременной нагрузке нескольких пакетов. Это не отменяет проверки ожидаемых HTTP-статусов; устойчивый `503` остаётся ошибкой теста.
+
+Для запуска одной группы сценариев:
 
 ```bash
-  go test -v ./tests/scenarios/myAdvertisement/
+go test -v ./tests/scenarios/advertisementCreate/
+go test -v ./tests/scenarios/favorites/
 ```
 
-## Логирование
+Тесты работают с реальным API и требуют доступности TestBoard. Объявления получают случайные уникальные названия и удаляются при завершении теста. Фотографии создаются во временном каталоге, поэтому дополнительные файлы не нужны. Тесты избранного используют два аккаунта: добавить собственное объявление в избранное API запрещает.
 
-Для включения логирования request/response в консоль: выставьте переменную окружения `DEBUG=true` в
-`.env.override`
+## Структура
 
-## Запуск линтера
+- `internal/client/http` — вызовы HTTP-ручек и построение запросов.
+- `internal/managers` — чтение ответов и модели API.
+- `tests/fixtures` — подготовка уникальных данных и очистка созданных объявлений.
+- `tests/scenarios` — проверки создания, поиска, своих объявлений и избранного.
 
-1. Установить приложение [golangci-lint](https://golangci-lint.run/docs/welcome/install/local/)
-2. Запуск линтера (из корня репозитория):
-
-```bash
-  golangci-lint run
-```
+В Swagger получение и удаление одного объявления описаны как `GET/DELETE /advertisement?id={id}`; фотографии читаются через `GET /advertisements/{id}/photos`. Поиск по подстроке обходит страницы каталога по `next_cursor`, чтобы находить объявления за пределами первой страницы.

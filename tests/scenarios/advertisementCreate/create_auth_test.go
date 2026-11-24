@@ -23,7 +23,7 @@ func TestCreateAdvertisementRequiresAuthorization(t *testing.T) {
 		{"неверный токен", fixtures.InvalidToken, fixtures.InvalidAuthMessage},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			request := fixtures.NewCreateRequest(t, 1)
+			request := fixtures.NewCreateRequest(t, validPhoto1)
 			t.Logf("Подготовка: запрос на создание объявления %s", tc.name)
 			result := fixtures.RetryServiceUnavailable(t, "POST /advertisement без корректной авторизации", func() response.Result {
 				return advertisement.CreateExpectedError(t, tc.token, request)

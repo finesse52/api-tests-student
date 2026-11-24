@@ -13,7 +13,7 @@ import (
 
 func TestCannotAddOwnAdvertisement(t *testing.T) {
 	owner := fixtures.Login(t, fixtures.PrimaryLoginEnv, fixtures.PrimaryPasswordEnv)
-	request := fixtures.NewCreateRequest(t, 1)
+	request := fixtures.NewCreateRequest(t, validPhoto)
 	created := fixtures.CreateOwnedAdvertisement(t, owner.Token, request)
 
 	t.Log("Шаг: владелец пытается добавить своё объявление в избранное")

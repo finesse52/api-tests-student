@@ -1,14 +1,7 @@
 package fixtures
 
 import (
-	"fmt"
-	"image"
-	"image/color"
-	"image/draw"
-	"image/jpeg"
 	"net/http"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -35,19 +28,18 @@ func (ad *OwnedAdvertisement) MarkDeleted() {
 	ad.deleted = true
 }
 
-// NewCreateRequest builds a unique advertisement and temporary JPEG files for one test.
-func NewCreateRequest(t *testing.T, photoCount int) models.CreateRequest {
+// NewCreateRequest builds a unique advertisement using photo files stored with the calling scenario.
+func NewCreateRequest(t *testing.T, photoFiles ...string) models.CreateRequest {
 	t.Helper()
-	require.GreaterOrEqual(t, photoCount, 0)
-	require.LessOrEqual(t, photoCount, 3)
+	for _, file := range photoFiles {
+		require.FileExists(t, file, "не найден файл фотографии %s", file)
+	}
 	request := models.CreateRequest{
 		Title:       testAdvertisementPrefix + utils.RandomString(16),
 		Description: "Created by the automated API test suite",
 		Price:       defaultPrice,
 		Quantity:    defaultQuantity,
-	}
-	for i := range photoCount {
-		request.PhotoFiles = append(request.PhotoFiles, createPhotoFile(t, i))
+		PhotoFiles:  append([]string(nil), photoFiles...),
 	}
 	return request
 }
@@ -72,23 +64,4 @@ func CreateOwnedAdvertisement(t *testing.T, token string, request models.CreateR
 	})
 	t.Logf("Результат подготовки: объявление создано, id=%s", created.ID)
 	return owned
-}
-
-// createPhotoFile writes a small valid JPEG into the test's temporary directory.
-func createPhotoFile(t *testing.T, index int) string {
-	t.Helper()
-	filePath := filepath.Join(t.TempDir(), fmt.Sprintf("photo-%d.jpg", index))
-	file, err := os.Create(filePath)
-	require.NoError(t, err, "не удалось создать временную фотографию")
-	defer func() {
-		if err := file.Close(); err != nil {
-			t.Errorf("не удалось закрыть временную фотографию: %v", err)
-		}
-	}()
-
-	photo := image.NewRGBA(image.Rect(0, 0, 256, 256))
-	shade := uint8(50 + index*50) //nolint:gosec // index is limited to three photos.
-	draw.Draw(photo, photo.Bounds(), &image.Uniform{C: color.RGBA{R: shade, G: 80, B: 180, A: 255}}, image.Point{}, draw.Src)
-	require.NoError(t, jpeg.Encode(file, photo, &jpeg.Options{Quality: 85}), "не удалось записать JPEG")
-	return filePath
 }

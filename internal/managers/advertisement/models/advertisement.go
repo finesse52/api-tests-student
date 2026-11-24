@@ -1,11 +1,13 @@
 package models
 
 type CreateRequest struct {
-	Title       string
-	Description string
-	Price       float64
-	Quantity    int
-	PhotoFiles  []string
+	Title        string
+	Description  string
+	Price        float64
+	Quantity     int
+	PriceText    string
+	QuantityText string
+	PhotoFiles   []string
 }
 
 type Photo struct {

@@ -15,11 +15,11 @@ import (
 func TestCannotAddFavoriteBeyondLimit(t *testing.T) {
 	viewer := fixtures.Login(t, fixtures.PrimaryLoginEnv, fixtures.PrimaryPasswordEnv)
 	owner := fixtures.Login(t, fixtures.SecondLoginEnv, fixtures.SecondPasswordEnv)
-	request := fixtures.NewCreateRequest(t, 1)
+	request := fixtures.NewCreateRequest(t, validPhoto)
 	created := fixtures.CreateOwnedAdvertisement(t, owner.Token, request)
 	initial := fixtures.PreserveFavorites(t, viewer.Token)
 	t.Logf("Подготовка: исходное избранное содержит %d объявлений", initial.Total)
-	full := fixtures.FillFavoritesToLimit(t, viewer.Token, viewer.User.Id, created.ID, initial)
+	full := fixtures.FillFavoritesToLimit(t, viewer.Token, owner.Token, validPhoto, initial)
 	require.Equal(t, models.FavoriteLimit, full.Total, "не удалось подготовить избранное на границе лимита")
 	t.Logf("Результат подготовки: достигнут лимит %d избранных", full.Total)
 

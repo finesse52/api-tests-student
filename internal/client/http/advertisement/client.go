@@ -18,11 +18,19 @@ func HttpCreate(t *testing.T, token string, request models.CreateRequest, retryT
 	if retryTransport {
 		call = runner.CreateWithTransientTransportRetry()
 	}
+	price := strconv.FormatFloat(request.Price, 'f', 2, 64)
+	if request.PriceText != "" {
+		price = request.PriceText
+	}
+	quantity := strconv.Itoa(request.Quantity)
+	if request.QuantityText != "" {
+		quantity = request.QuantityText
+	}
 	createRequest := call.Post(path.AdvertisementPath).
 		MultipartFormData("title", request.Title).
 		MultipartFormData("description", request.Description).
-		MultipartFormData("price", strconv.FormatFloat(request.Price, 'f', 2, 64)).
-		MultipartFormData("quantity", strconv.Itoa(request.Quantity))
+		MultipartFormData("price", price).
+		MultipartFormData("quantity", quantity)
 	for _, photo := range request.PhotoFiles {
 		createRequest = createRequest.MultipartFile("photos", photo)
 	}

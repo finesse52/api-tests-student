@@ -16,7 +16,7 @@ import (
 
 func TestCreateAdvertisementWithAllFields(t *testing.T) {
 	owner := fixtures.Login(t, fixtures.PrimaryLoginEnv, fixtures.PrimaryPasswordEnv)
-	request := fixtures.NewCreateRequest(t, 3)
+	request := fixtures.NewCreateRequest(t, validPhoto1, validPhoto2, validPhoto3)
 	created := fixtures.CreateOwnedAdvertisement(t, owner.Token, request)
 
 	t.Log("Шаг: проверяем данные ответа на создание")

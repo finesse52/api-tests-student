@@ -14,7 +14,7 @@ import (
 func TestCannotAddSameAdvertisementTwice(t *testing.T) {
 	viewer := fixtures.Login(t, fixtures.PrimaryLoginEnv, fixtures.PrimaryPasswordEnv)
 	owner := fixtures.Login(t, fixtures.SecondLoginEnv, fixtures.SecondPasswordEnv)
-	request := fixtures.NewCreateRequest(t, 1)
+	request := fixtures.NewCreateRequest(t, validPhoto)
 	created := fixtures.CreateOwnedAdvertisement(t, owner.Token, request)
 	fixtures.AddFavorite(t, viewer.Token, request.Title, created.ID)
 
